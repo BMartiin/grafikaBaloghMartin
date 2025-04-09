@@ -5,148 +5,170 @@
 
 #define WIDTH 1200
 #define HEIGHT 750
-#define PI 3.142857
+#define PI 3.142857f
 
+// Téglatest kirajzolása adott pozícióban
 void drawBrick(float x, float y, float z) {
     glPushMatrix();
     glTranslatef(x, y, z);
-    glScalef(0.2f, 0.6f, 0.2f);
+    glScalef(0.2f, 0.6f, 0.2f); // méretezés
     glBegin(GL_QUADS);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    
-    // Front face
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    
-    // Back face
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    
-    // Left face
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    
-    // Right face
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    
-    // Top face
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    
-    // Bottom face
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    
+    glColor3f(1.0f, 1.0f, 1.0f); // fehér szín
+
+    // Hat oldal
+    // Előlap
+    glVertex3f(-0.5f, -0.5f, 0.5f); glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f,  0.5f, 0.5f); glVertex3f(-0.5f, 0.5f, 0.5f);
+    // Hátlap
+    glVertex3f(-0.5f, -0.5f, -0.5f); glVertex3f(0.5f, -0.5f, -0.5f);
+    glVertex3f(0.5f,  0.5f, -0.5f); glVertex3f(-0.5f, 0.5f, -0.5f);
+    // Bal oldal
+    glVertex3f(-0.5f, -0.5f, -0.5f); glVertex3f(-0.5f, -0.5f, 0.5f);
+    glVertex3f(-0.5f,  0.5f, 0.5f); glVertex3f(-0.5f, 0.5f, -0.5f);
+    // Jobb oldal
+    glVertex3f(0.5f, -0.5f, -0.5f); glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f,  0.5f, 0.5f); glVertex3f(0.5f, 0.5f, -0.5f);
+    // Tető
+    glVertex3f(-0.5f, 0.5f, -0.5f); glVertex3f(0.5f, 0.5f, -0.5f);
+    glVertex3f(0.5f,  0.5f, 0.5f); glVertex3f(-0.5f, 0.5f, 0.5f);
+    // Alj
+    glVertex3f(-0.5f, -0.5f, -0.5f); glVertex3f(0.5f, -0.5f, -0.5f);
+    glVertex3f(0.5f,  -0.5f, 0.5f); glVertex3f(-0.5f, -0.5f, 0.5f);
+
     glEnd();
     glPopMatrix();
 }
 
-void drawSphere(float x, float y, float z, float angle) {
-    glPushMatrix();
-    glTranslatef(x, y, z);
-    glRotatef(angle, 1.0f, 1.0f, 0.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    float radius = 0.3f;
-    int stacks = 20;
-    int slices = 40;
-    
+// Gömb kirajzolása megadott paraméterekkel
+void drawSphere(float radius, int stacks, int slices) {
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < stacks; i++) {
         float phi1 = (i * PI) / stacks;
         float phi2 = ((i + 1) * PI) / stacks;
-        
+
+        // Rétegek színezése váltogatva
+        int colorIndex = i % 3;
+        if (colorIndex == 0) glColor3f(1.0f, 1.0f, 0.0f);    // sárga
+        else if (colorIndex == 1) glColor3f(1.0f, 1.0f, 1.0f); // fehér
+        else glColor3f(1.0f, 0.5f, 0.0f);                     // narancs
+
         for (int j = 0; j < slices; j++) {
             float theta1 = (j * 2.0f * PI) / slices;
             float theta2 = ((j + 1) * 2.0f * PI) / slices;
-            
+
             float x1 = radius * sinf(phi1) * cosf(theta1);
             float y1 = radius * cosf(phi1);
             float z1 = radius * sinf(phi1) * sinf(theta1);
+
             float x2 = radius * sinf(phi1) * cosf(theta2);
             float y2 = radius * cosf(phi1);
             float z2 = radius * sinf(phi1) * sinf(theta2);
+
             float x3 = radius * sinf(phi2) * cosf(theta1);
             float y3 = radius * cosf(phi2);
             float z3 = radius * sinf(phi2) * sinf(theta1);
+
             float x4 = radius * sinf(phi2) * cosf(theta2);
             float y4 = radius * cosf(phi2);
             float z4 = radius * sinf(phi2) * sinf(theta2);
-            
-            glVertex3f(x1, y1, z1);
-            glVertex3f(x2, y2, z2);
-            glVertex3f(x3, y3, z3);
-            glVertex3f(x2, y2, z2);
-            glVertex3f(x3, y3, z3);
-            glVertex3f(x4, y4, z4);
+
+            glVertex3f(x1, y1, z1); glVertex3f(x2, y2, z2); glVertex3f(x3, y3, z3);
+            glVertex3f(x2, y2, z2); glVertex3f(x3, y3, z3); glVertex3f(x4, y4, z4);
         }
     }
     glEnd();
-    glPopMatrix();
+}
+
+// Talaj sík kirajzolása
+void drawGroundPlane(float radius) {
+    glBegin(GL_QUADS);
+    glColor3f(0.3f, 0.3f, 0.3f); // sötétszürke talaj
+    glVertex3f(-3.0f, -radius - 0.01f, -100.0f);
+    glVertex3f(3.0f, -radius - 0.01f, -100.0f);
+    glVertex3f(3.0f, -radius - 0.01f, 50.0f);
+    glVertex3f(-3.0f, -radius - 0.01f, 50.0f);
+    glEnd();
 }
 
 int main(int argc, char *argv[]) {
+    // SDL inicializálás
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        fprintf(stderr, "SDL error: %s\n", SDL_GetError());
+        fprintf(stderr, "SDL hiba: %s\n", SDL_GetError());
         return -1;
     }
 
-    SDL_Window* window = SDL_CreateWindow("Bowling Scene", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
+    SDL_Window* window = SDL_CreateWindow("feladatAlpha1_gomb", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
     if (!window) {
-        fprintf(stderr, "Window error: %s\n", SDL_GetError());
+        fprintf(stderr, "Ablak hiba: %s\n", SDL_GetError());
         SDL_Quit();
         return -1;
     }
-    
+
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     if (!glContext) {
-        fprintf(stderr, "OpenGL context error: %s\n", SDL_GetError());
+        fprintf(stderr, "OpenGL kontextusos hiba: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
         return -1;
     }
 
-    int running = 1;
-    SDL_Event event;
-    float angle = 0.0f;
-
+    // OpenGL beállítások
     glEnable(GL_DEPTH_TEST);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glFrustum(-1.5, 1.5, -1.0, 1.0, 1.0, 10.0);
     glMatrixMode(GL_MODELVIEW);
 
+    float angle1 = 0.0f;
+    const float radius = 0.3f;
+    const int stacks = 40;
+    const int slices = 80;
+    int running = 1;
+
+    //animáció:
+    float ballZ = 2.0f;                 // Kezdeti Z pozíció
+    float speed = -0.02f;              // Sebesség (Z mentén előre)
+    float distanceTraveled = 0.0f;    // Megtett út
+
+
+    // Fő ciklus
     while (running) {
+        SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = 0;
-            }
+            if (event.type == SDL_QUIT) running = 0;
         }
 
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // háttér: fekete
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
-        glTranslatef(0.0f, -1.0f, -2.5f);
+        glTranslatef(0.0f, -1.0f, -3.0f); // kamera pozíció
 
-        drawSphere(0.0f, -0.2f, -0.5f, angle);
+        // Gömb kirajzolása forgatással
+        // Frissítjük a megtett távolságot
+        distanceTraveled += speed;
+        ballZ += speed;
+
+        // Gurulási szög számítása
+        angle1 = distanceTraveled / radius * (180.0f / PI);
+
+        glPushMatrix();
+        glTranslatef(0.0f, 0.0f, ballZ);        // Z irányú mozgás
+        glRotatef(angle1, 1.0f, 0.0f, 0.0f);    // Forgás az X tengely mentén
+        drawSphere(radius, stacks, slices);
+        glPopMatrix();
+
+
+        // Téglák kirajzolása
         for (int i = -2; i <= 2; i++) {
             drawBrick(i * 0.5f, 0.3f, -3.0f);
         }
 
+        // Talaj kirajzolása
+        drawGroundPlane(radius);
+
         SDL_GL_SwapWindow(window);
-        angle += 1.0f;
-        SDL_Delay(16);
+        angle1 += 1.0f;
+        SDL_Delay(16); //kb 60 FPS
     }
 
     SDL_GL_DeleteContext(glContext);
