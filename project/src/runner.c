@@ -1,24 +1,30 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_opengl.h>
 #include "renderer.h"
 #include "pin.h"
 #include "ball.h"
 #include "ground.h"
 #include "physics.h"
+#include "texture.h"
 
 #define NUM_PINS 10
 
+GLuint ballTexture;
+GLuint groundTexture;
+GLuint wallTexture;
+GLuint pinTexture;
+
 Ball ball = {
-    .x = 0.0f, .y = 0.0f, .z = 3.0f,   // indulási pozíció
-    .vx = 0.0f, .vy = 0.0f, .vz = -4.0f, // előrefelé gurul
+    .x = 0.0f, .y = 0.0f, .z = 3.0f,
+    .vx = 0.0f, .vy = 0.0f, .vz = -1.0f,
     .radius = 0.2f
 };
 
 Pin pins[NUM_PINS];
 
 void initPins() {
-    // 1-2-3-4 elrendezés (háromszög)
     int layout[] = {4, 3, 2, 1};
     int index = 0;
     float startZ = -4.0f;
@@ -42,14 +48,33 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    SDL_Window* window = SDL_CreateWindow("bowling", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        fprintf(stderr, "SDL_image nem inicializálható: %s\n", IMG_GetError());
+        return -1;
+    }
+
+    SDL_Window* window = SDL_CreateWindow("Bowling", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
     if (!window) return -1;
 
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     if (!glContext) return -1;
 
+    // Textúrák betöltése
+    ballTexture = loadTexture("assets/ball1.png");
+    groundTexture = loadTexture("assets/lane1.jpg");
+    wallTexture = loadTexture("assets/redBrick.jpg");
+    pinTexture = loadTexture("assets/pin1.jpg");
+
+    if (ballTexture == 0 || groundTexture == 0 || wallTexture == 0 || pinTexture == 0) {
+        fprintf(stderr, "Egy vagy több textúra betöltése sikertelen.\n");
+        return -1;
+    }
+
     initPins();
+
+    // OpenGL beállítások
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glFrustum(-1.5, 1.5, -1.0, 1.0, 1.0, 10.0);
@@ -63,9 +88,8 @@ int main(int argc, char *argv[]) {
 
     int running = 1;
     while (running) {
-        float deltaTime = 0.016f; // kb. 60 FPS
+        float deltaTime = 0.016f;
 
-        // Fizika frissítés
         updateBallPosition(&ball, deltaTime);
         for (int i = 0; i < NUM_PINS; ++i) {
             if (!pins[i].fallen && checkCollision(&ball, &pins[i])) {
@@ -73,13 +97,11 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // Eseménykezelés
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
         }
 
-        // Kirajzolás
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
@@ -88,21 +110,21 @@ int main(int argc, char *argv[]) {
         distanceTraveled += ball.vz * deltaTime;
         angle1 = distanceTraveled / radius * (180.0f / PI);
 
-        // Golyó kirajzolása
+        // Golyó
         glPushMatrix();
         glTranslatef(ball.x, ball.y, ball.z);
         glRotatef(angle1, 1.0f, 0.0f, 0.0f);
-        drawSphere(radius, stacks, slices);
+        drawSphere(radius, stacks, slices, ballTexture);
         glPopMatrix();
 
-        // Bábuk kirajzolása
+        // Bábuk
         for (int i = 0; i < NUM_PINS; ++i) {
             if (!pins[i].fallen) {
-                drawPin(pins[i].x, pins[i].y, pins[i].z);
+                drawPin(pins[i].x, pins[i].y, pins[i].z, pinTexture);
             }
         }
 
-        drawGroundPlane(radius);
+        drawGroundPlane(radius, groundTexture, wallTexture);
 
         SDL_GL_SwapWindow(window);
         SDL_Delay(16);
@@ -110,6 +132,7 @@ int main(int argc, char *argv[]) {
 
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
+    IMG_Quit();
     SDL_Quit();
     return 0;
 }

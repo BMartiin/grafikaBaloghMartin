@@ -1,6 +1,9 @@
 #ifndef GROUND_H
 #define GROUND_H
 
-void drawGroundPlane(float radius);
+#include <GL/gl.h>
+
+void drawGroundPlane(float radius, GLuint groundTexture, GLuint wallTexture);
+
 
 #endif
