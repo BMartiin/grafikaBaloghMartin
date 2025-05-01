@@ -1,6 +1,8 @@
 #include "physics.h"
 #include <math.h>
 
+#define PI 3.14159265358979323846
+
 void updateBallPosition(Ball *ball, float dt) {
     ball->x += ball->vx * dt;
     ball->y += ball->vy * dt;
@@ -19,4 +21,16 @@ int checkCollision(Ball *ball, Pin *pin) {
 
 void applyCollision(Pin *pin) {
     pin->fallen = 1;
+    pin->animating = 1;
+    pin->rotationSpeed = (PI / 2.0f)*4.0f;  // gyorsítottam, mert vicces volt
+}
+
+void updatePinRotation(Pin *pin, float dt) {
+    if (pin->animating) {
+        pin->rotation += pin->rotationSpeed * dt;
+        if (pin->rotation > PI / 2.0f) { // 90 fok = π/2 radián
+            pin->rotation = PI / 2.0f;
+            pin->animating = 0;
+        }
+    }
 }
