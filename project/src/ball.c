@@ -15,12 +15,12 @@ void drawSphere(float radius, int stacks, int slices, unsigned int texture, int 
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     }
 
-    // 🔧 Csak akkor állítsunk be színt, ha kifejezetten kérjük
+    // csak akkor színezzük, ha nincs textúra (hibát hamarabb észreveszem)
     if (forceColor) {
         if (textured)
             glColor3f(1.0f, 1.0f, 1.0f);
         else
-            glColor3f(1.0f, 0.0f, 0.0f);  // ha nincs textúra, piros
+            glColor3f(1.0f, 0.0f, 0.0f);  // ha nincs textúra, akkor alapból piros
     }
 
     for (int i = 0; i < stacks; i++) {

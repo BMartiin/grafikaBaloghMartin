@@ -1,10 +1,18 @@
 #include <GL/gl.h>
 #include <math.h>
 #include "lightbulp.h"
+#include "texture.h"
 
 #define PI 3.14159265358979323846
 
-// Árnyékmátrix kiszámítása
+//fényforr textúra mizéria
+static GLuint lightbulpTex=0;
+
+void setLightbulpTexture(GLuint tex) {
+    lightbulpTex = tex;
+}
+
+// árnyékmátrix kiszámítása
 static void computeShadowMatrix(GLfloat shadowMat[16], const GLfloat lightPos[4], const GLfloat groundPlane[4]) {
     GLfloat dot = groundPlane[0] * lightPos[0] +
                   groundPlane[1] * lightPos[1] +
@@ -29,8 +37,10 @@ static void computeShadowMatrix(GLfloat shadowMat[16], const GLfloat lightPos[4]
     shadowMat[15] = dot - lightPos[3] * groundPlane[3];
 }
 
-// Gömb kirajzolása
+// fényforr gömb kirajzolása
 static void drawSphere(float radius, int stacks, int slices) {
+    glEnable(GL_TEXTURE_2D);
+
     for (int i = 0; i < stacks; i++) {
         float phi1 = (i * PI) / stacks;
         float phi2 = ((i + 1) * PI) / stacks;
@@ -47,17 +57,26 @@ static void drawSphere(float radius, int stacks, int slices) {
             float y2 = cosf(phi2);
             float z2 = sinf(phi2) * sinf(theta);
 
+            float u = (float)j / slices;
+            float v1 = (float)i / stacks;
+            float v2 = (float)(i + 1) / stacks;
+
             glNormal3f(x1, y1, z1);
+            glTexCoord2f(u, v1);
             glVertex3f(radius * x1, radius * y1, radius * z1);
 
             glNormal3f(x2, y2, z2);
+            glTexCoord2f(u, v2);
             glVertex3f(radius * x2, radius * y2, radius * z2);
         }
         glEnd();
     }
+
+    glDisable(GL_TEXTURE_2D);
 }
 
-// Fényforrás és árnyék kirajzolása
+
+// fényforrás és árnyék kirajzolása
 void drawLightbulbAndShadow(void (*drawObject)()) {
     GLfloat lightPos[] = { -2.0f, 3.5f, -2.0f, 1.0f };
     GLfloat spotDir[] = { 0.3f, -1.0f, -0.3f };
@@ -80,23 +99,34 @@ void drawLightbulbAndShadow(void (*drawObject)()) {
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
-    // Fényforrás gömb
-    glPushMatrix();
-    glTranslatef(lightPos[0], lightPos[1], lightPos[2]);
-    glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 1.0f, 0.6f);
-    drawSphere(0.5f, 30, 30);
-    glEnable(GL_LIGHTING);
-    glPopMatrix();
+        // fényforrás gömb
+        glPushMatrix();
+        glTranslatef(lightPos[0], lightPos[1], lightPos[2]);
+    
+        glDisable(GL_LIGHTING);
+        if (lightbulpTex != 0) {
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, lightbulpTex);
+        } else {
+            glDisable(GL_TEXTURE_2D);
+        }
+    
+        glColor3f(1.0f, 1.0f, 1.0f);  // ha van textúra, ne színezze el
+        drawSphere(0.5f, 30, 30);
+    
+        glDisable(GL_TEXTURE_2D);
+        glEnable(GL_LIGHTING);
+        glPopMatrix();
+    
 
-    // Árnyék
+    // árnyék
     GLfloat groundPlane[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
     GLfloat shadowMat[16];
     computeShadowMatrix(shadowMat, lightPos, groundPlane);
 
     glDisable(GL_LIGHTING);
     glDisable(GL_COLOR_MATERIAL);
-    glColor4f(0.0f, 0.0f, 0.0f, 0.9f); // Árnyék színe és átlátszóság
+    glColor4f(0.0f, 0.0f, 0.0f, 0.9f); // árnyék színe és átlátszóság
 
     glPushMatrix();
     glTranslatef(0.0f, -0.2f, 0.0f);

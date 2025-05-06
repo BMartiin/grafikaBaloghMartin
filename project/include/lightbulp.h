@@ -2,6 +2,7 @@
 #define LIGHTBULP_H
 
 void drawLightbulbAndShadow(void (*drawObject)(void));
-void drawLightbulb();
+void drawLightbulb(GLuint tex);
+void setLightbulpTexture(GLuint tex);
 
 #endif

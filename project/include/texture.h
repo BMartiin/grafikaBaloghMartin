@@ -7,10 +7,14 @@
 extern "C" {
 #endif
 
+// általános ismétlődő textúra betöltése
 GLuint loadTexture(const char* filename);
+
+// clamp (a szélén megáll) textúra betöltése
+GLuint loadTextureClamp(const char* filename);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif // TEXTURE_H

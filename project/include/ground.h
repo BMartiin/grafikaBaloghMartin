@@ -3,7 +3,7 @@
 
 #include <GL/gl.h>
 
-void drawGroundPlane(float radius, GLuint groundTexture, GLuint wallTexture);
-
+// padló, falak és plafon rajzolása különböző textúrákkal
+void drawGroundPlane(float radius, GLuint groundTexture, GLuint wallTexture, GLuint backWallTexture, GLuint ceilingTexture);
 
 #endif

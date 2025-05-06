@@ -1,24 +1,24 @@
 #include <GL/gl.h>
 #include "ground.h"
 
-void drawGroundPlane(float radius, GLuint groundTexture, GLuint wallTexture) {
+void drawGroundPlane(float radius, GLuint groundTexture, GLuint wallTexture, GLuint backWallTexture, GLuint ceilingTexture) {
+    //ez a rész a fényforrás meg árnyék meg ilyenek miatt kell
     glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
 
-    // Világítás beállításai
-    GLfloat lightPos[] = { 0.0f, 5.0f, 5.0f, 1.0f };  // Itt próbálj finomítani a fény pozícióján
-    GLfloat lightAmbient[] = { 0.3f, 0.3f, 0.3f, 1.0f }; // Szürkébb ambient fény
-    GLfloat lightDiffuse[] = { 0.9f, 0.9f, 0.8f, 1.0f }; // Erősebb difúz fény
-    GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // Magas specular fény
+    // fényforrás beállítása
+    GLfloat lightPos[] = { 0.0f, 5.0f, 5.0f, 1.0f };
+    GLfloat lightAmbient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+    GLfloat lightDiffuse[] = { 0.9f, 0.9f, 0.8f, 1.0f };
+    GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
 
-    // Anyagjellemzők – egy fokkal világosabb
     GLfloat matAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    GLfloat matDiffuse[] = { 0.45f, 0.45f, 0.45f, 1.0f };  // Sötétebb szürke, hogy a fények jobban kiemeljék az árnyékot
+    GLfloat matDiffuse[] = { 0.45f, 0.45f, 0.45f, 1.0f };
     GLfloat matSpecular[] = { 0.6f, 0.6f, 0.6f, 1.0f };
     GLfloat matShininess[] = { 45.0f };
 
@@ -29,53 +29,58 @@ void drawGroundPlane(float radius, GLuint groundTexture, GLuint wallTexture) {
 
     glEnable(GL_TEXTURE_2D);
 
-    glBindTexture(GL_TEXTURE_2D, groundTexture);
-    glColor3f(0.9f, 0.9f, 0.9f);  // Majdnem fehér, hogy a fény erősebben érvényesüljön
-
+    //hátsó fal helye, pálya vége
     float backWallZ = -8.0f;
-    float tileRepeat = 8.0f;
 
-    // Padló
+    // padló
+    glBindTexture(GL_TEXTURE_2D, groundTexture);
+    glColor3f(0.9f, 0.9f, 0.9f);
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-3.0f, -radius - 0.01f, backWallZ);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(3.0f, -radius - 0.01f, backWallZ);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(3.0f, -radius - 0.01f, 50.0f);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-3.0f, -radius - 0.01f, 50.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(3.0f, -radius - 0.01f, 4.1f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-3.0f, -radius - 0.01f, 4.1f);
     glEnd();
 
-    // Falak
+    // oldalfalak
     glBindTexture(GL_TEXTURE_2D, wallTexture);
-    float wallRepeat = 8.0f;
+    float wallRepeat = 8.0f; // textúra ismétlődése
 
-    // Bal fal
+    // bal fal
     glBegin(GL_QUADS);
     glNormal3f(-1.0f, 0.0f, 0.0f);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-3.0f, -radius - 0.01f, backWallZ);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-3.0f, 3.5f, backWallZ);
-    glTexCoord2f(wallRepeat, 1.0f); glVertex3f(-3.0f, 3.5f, 50.0f);
-    glTexCoord2f(wallRepeat, 0.0f); glVertex3f(-3.0f, -radius - 0.01f, 50.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-3.0f, -radius - 0.01f, backWallZ);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-3.0f, 3.5f, backWallZ);
+    glTexCoord2f(wallRepeat, 0.0f); glVertex3f(-3.0f, 3.5f, 50.0f);
+    glTexCoord2f(wallRepeat, 1.0f); glVertex3f(-3.0f, -radius - 0.01f, 50.0f);
     glEnd();
 
-    // Jobb fal
+    // jobb fal
     glBegin(GL_QUADS);
     glNormal3f(1.0f, 0.0f, 0.0f);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(3.0f, -radius - 0.01f, backWallZ);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(3.0f, 3.5f, backWallZ);
-    glTexCoord2f(wallRepeat, 1.0f); glVertex3f(3.0f, 3.5f, 50.0f);
-    glTexCoord2f(wallRepeat, 0.0f); glVertex3f(3.0f, -radius - 0.01f, 50.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(3.0f, -radius - 0.01f, backWallZ);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(3.0f, 3.5f, backWallZ);
+    glTexCoord2f(wallRepeat, 0.0f); glVertex3f(3.0f, 3.5f, 50.0f);
+    glTexCoord2f(wallRepeat, 1.0f); glVertex3f(3.0f, -radius - 0.01f, 50.0f);
     glEnd();
 
-    // Tető
+
+    // plafon
+    glBindTexture(GL_TEXTURE_2D, ceilingTexture);
+    glColor3f(0.9f, 0.9f, 0.9f);
     glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
+    glNormal3f(0.0f, -1.0f, 0.0f);  // lefelé néz
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-3.0f, 3.5f, backWallZ);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(3.0f, 3.5f, backWallZ);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(3.0f, 3.5f, 50.0f);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-3.0f, 3.5f, 50.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(3.0f, 3.5f, 4.1f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-3.0f, 3.5f, 4.1f);
     glEnd();
 
-    // Hátsó fal
+
+    // hátsó fal, nem ismétlődik a textúra
+    
+    glBindTexture(GL_TEXTURE_2D, backWallTexture);
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, -1.0f);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-3.0f, -radius - 0.01f, backWallZ);

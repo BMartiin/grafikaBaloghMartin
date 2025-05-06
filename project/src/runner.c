@@ -14,7 +14,7 @@
 
 #define NUM_PINS 10
 
-// Játékállapotok
+// játék állapotok
 typedef enum {
     STATE_AIMING,
     STATE_RUNNING
@@ -24,12 +24,17 @@ GLuint ballTexture;
 GLuint groundTexture;
 GLuint wallTexture;
 GLuint pinTexture;
+GLuint backWallTexture;
+GLuint ceilingTexture;
+GLuint lightbulpTexture;
 
 Ball ball;
 Pin pins[NUM_PINS];
 GameState gameState = STATE_AIMING;
 
-// Golyó újraindítása
+int followBall = 0;  // kamera mód: 0 = statikus, 1 = követi a golyót
+
+// a játék elején a golyó helyzete és sebessége
 void resetBallPosition(Ball* b) {
     b->x = 0.0f;
     b->y = 0.0f;
@@ -39,7 +44,7 @@ void resetBallPosition(Ball* b) {
     b->vz = 0.0f;
 }
 
-// Billentyűkezelés
+//billentyűkezelés
 void handleInput(SDL_Event event, Ball* b, GameState* state) {
     if (event.type == SDL_KEYDOWN) {
         switch (event.key.keysym.sym) {
@@ -57,10 +62,14 @@ void handleInput(SDL_Event event, Ball* b, GameState* state) {
                     *state = STATE_RUNNING;
                 }
                 break;
+            case SDLK_SPACE:
+                followBall = !followBall;
+                break;
         }
     }
 }
 
+// bábúk helyének inicializálása
 void initPins() {
     int layout[] = {4, 3, 2, 1};
     int index = 0;
@@ -79,6 +88,7 @@ void initPins() {
     }
 }
 
+// gömb kirajzolása árnyékkal
 void drawBallForShadow() {
     glPushMatrix();
     glTranslatef(ball.x, ball.y, ball.z);
@@ -86,6 +96,7 @@ void drawBallForShadow() {
     glPopMatrix();
 }
 
+// -------- Fővezér -----------
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "SDL hiba: %s\n", SDL_GetError());
@@ -103,13 +114,18 @@ int main(int argc, char *argv[]) {
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     if (!glContext) return -1;
 
+    //textúrák betöltése
     ballTexture = loadTexture("assets/ball1.png");
-    groundTexture = loadTexture("assets/lane1.jpg");
-    wallTexture = loadTexture("assets/redBrick.jpg");
+    groundTexture = loadTexture("assets/padlo_textura.jpg");
+    wallTexture = loadTexture("assets/fal_textura.jpg");
     pinTexture = loadTexture("assets/pin1.jpg");
+    backWallTexture = loadTextureClamp("assets/fal_2_textura.jpg");
+    ceilingTexture = loadTexture("assets/plafon_textura.jpg");
+    lightbulpTexture = loadTexture("assets/lampa_textura.jpg");  
+    setLightbulpTexture(lightbulpTexture);
 
-    if (ballTexture == 0 || groundTexture == 0 || wallTexture == 0 || pinTexture == 0) {
-        fprintf(stderr, "Egy vagy több textúra betöltése sikertelen.\n");
+    if (ballTexture == 0 || groundTexture == 0 || wallTexture == 0 || pinTexture == 0 || backWallTexture == 0 || ceilingTexture == 0) {
+        fprintf(stderr, "Egy vagy tobb textura betoltese sikertelen.\n");
         return -1;
     }
 
@@ -124,9 +140,11 @@ int main(int argc, char *argv[]) {
     gluPerspective(60.0, (double)WIDTH / (double)HEIGHT, 1.0, 100.0);
     glMatrixMode(GL_MODELVIEW);
 
+    // világítás beállítása
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
 
+    // világítás pozíciója és színe
     GLfloat lightPos[] = { 0.0f, 3.0f, 3.0f, 1.0f };
     GLfloat lightAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     GLfloat lightDiffuse[] = { 2.0f, 2.0f, 2.0f, 1.0f };
@@ -146,9 +164,12 @@ int main(int argc, char *argv[]) {
     const int stacks = 40;
     const int slices = 80;
 
+    float cameraZ = 6.2f;  // dinamikus kamera z-koordináta
+
+    //futunk
     int running = 1;
     while (running) {
-        float deltaTime = 0.016f;
+        float deltaTime = 0.016f; // 60 FPS
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -170,13 +191,20 @@ int main(int argc, char *argv[]) {
 
             distanceTraveled += ball.vz * deltaTime;
             angle1 = distanceTraveled / radius * (180.0f / PI);
+
+            float targetZ = ball.z + 2.2f;
+            if (followBall && targetZ < cameraZ && ball.z > -1.0f) {
+                cameraZ = targetZ;
+            }
         }
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
 
-        gluLookAt(0.0f, 2.5f, 6.2f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        gluLookAt(0.0f, 2.5f, cameraZ,
+                  0.0f, 0.0f, cameraZ - 6.0f,
+                  0.0f, 1.0f, 0.0f); // kamera pozíciója
 
         drawLightbulbAndShadow(drawBallForShadow);
 
@@ -198,7 +226,7 @@ int main(int argc, char *argv[]) {
             glPopMatrix();
         }
 
-        drawGroundPlane(radius, groundTexture, wallTexture);
+        drawGroundPlane(radius, groundTexture, wallTexture, backWallTexture, ceilingTexture);
 
         SDL_GL_SwapWindow(window);
         SDL_Delay(16);
