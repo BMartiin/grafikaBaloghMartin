@@ -1,5 +1,5 @@
 Balogh Martin -OIKGCW-
 
-A repository a megadott minta alapján van felépítve: gyakorlatok mappa -> mappákban gyakorlantonként rendszerezve a feladatok, project -> a féléves feladatot tartalmazza.
+A repository a megadott minta alapján van felépítve: gyakorlatok mappa -> mappákban gyakorlantonként rendszerezve a feladatok, feladat -> a féléves feladatot tartalmazza.
 
 A féléves feladatom: Egy bowling szimuláció alkalmazást készítettem. A programban van egy kész bowling pálya, golyó, bábúk, mind megfelelő textúrával. Élethű fizikát nem tartalmaz, de a különböző elemek ( bábúk, golyó) érzékelik egymást és reagálnak, ha érintkeznek. A program tartalmaz a plafon bal oldalán (egy szándékosan túlméretezett) fényforrást, aminek a fénye, mint egy sugárban, körben megvilágítja a bábúk első 2 sorát, valamint a golyót, amikor az a fényforrás alá ér. A program tartalmaz árnyékokat is, ez a golyónál a legszemléletesebb. Az irányítás: "a" gomb -> balra mozgatja a golyót, "d" -> gomb jobbra, "enter" -> elindítja a golyót, "space" -> kamera módot vált (statikus->mozgó). A kamera kb. a pálya közepénél fixen megáll, mert egyébként szerintem furcsa. Indítás után a golyót nem lehet mozgatni. 
